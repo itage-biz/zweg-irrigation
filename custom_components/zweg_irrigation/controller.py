@@ -199,18 +199,18 @@ class IrrigationController:
         return True
 
     async def async_start_zone(self, zone_id: str) -> bool:
-        """Start exactly one configured, enabled zone."""
+        """Preempt work and start exactly one configured, enabled zone."""
         async with self._lock:
             zone = next((item for item in self.config.zones if item.id == zone_id), None)
-            if (
-                zone is None
-                or not zone.enabled
-                or not self.enabled
-                or self.runtime.state != STATE_IDLE
-                or self.paused
-                or self._multiplier() is None
-            ):
+            if zone is None or not zone.enabled or not self.enabled or self._multiplier() is None:
                 return False
+            if self.runtime.state != STATE_IDLE:
+                await self._async_cancel_zone_task()
+                await self._async_safe_off()
+                self.runtime = RuntimeState(
+                    schedule_anchor=self.runtime.schedule_anchor,
+                    enabled=self.enabled,
+                )
             self.runtime.cycle_kind = "single"
             self.runtime.completed_zone_ids = []
             await self._async_begin_zone(zone)

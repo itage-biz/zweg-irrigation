@@ -258,3 +258,72 @@ async def test_remaining_tick_notifies_only_while_watering(tmp_path: Path) -> No
         assert notifications == [None]
     finally:
         await hass.async_stop()
+
+
+@pytest.mark.asyncio
+async def test_start_zone_preempts_stopped_running_and_paused_work(tmp_path: Path) -> None:
+    """Starting a zone immediately replaces any retained or active work."""
+    hass = HomeAssistant(str(tmp_path))
+
+    async def set_switch(call) -> None:
+        entity_id = call.data["entity_id"]
+        hass.states.async_set(entity_id, "on" if call.service == "turn_on" else "off")
+
+    hass.services.async_register("switch", "turn_on", set_switch)
+    hass.services.async_register("switch", "turn_off", set_switch)
+    for entity_id in ("switch.pump", "switch.front", "switch.back"):
+        hass.states.async_set(entity_id, "off")
+    entry = Entry(
+        data={
+            "controller_name": "Garden",
+            "interval_days": 1,
+            "start_time": "06:00:00",
+            "transition_delay": 0,
+            "pump_entity_id": "switch.pump",
+            "zones": [
+                {
+                    "id": "front",
+                    "name": "Front",
+                    "duration": 30,
+                    "enabled": True,
+                    "valves": ["switch.front"],
+                },
+                {
+                    "id": "back",
+                    "name": "Back",
+                    "duration": 30,
+                    "enabled": True,
+                    "valves": ["switch.back"],
+                },
+            ],
+        }
+    )
+    try:
+        controller = IrrigationController(hass, entry, MemoryRuntimeStore())
+
+        assert await controller.async_start_zone("back")
+        assert controller.active_zone.id == "back"
+        assert hass.states.get("switch.back").state == "on"
+
+        await controller.async_stop()
+        assert await controller.async_start_cycle()
+        assert controller.active_zone.id == "front"
+        assert hass.states.get("switch.front").state == "on"
+
+        assert await controller.async_start_zone("back")
+        assert controller.active_zone.id == "back"
+        assert hass.states.get("switch.front").state == "off"
+        assert hass.states.get("switch.back").state == "on"
+        assert hass.states.get("switch.pump").state == "on"
+
+        await controller.async_pause()
+        assert controller.status == "paused"
+
+        assert await controller.async_start_zone("front")
+        assert controller.active_zone.id == "front"
+        assert hass.states.get("switch.front").state == "on"
+        assert hass.states.get("switch.back").state == "off"
+        assert hass.states.get("switch.pump").state == "on"
+        await controller.async_stop()
+    finally:
+        await hass.async_stop()
