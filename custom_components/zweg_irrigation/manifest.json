@@ -1,0 +1,13 @@
+{
+  "domain": "zweg_irrigation",
+  "name": "Zweg Irrigation",
+  "codeowners": ["@itage-biz"],
+  "config_flow": true,
+  "documentation": "https://github.com/itage-biz/zweg-irrigation",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/itage-biz/zweg-irrigation/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
+

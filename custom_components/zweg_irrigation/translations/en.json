@@ -1,0 +1,95 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Zweg Irrigation",
+        "description": "Configure the controller schedule and optional safety entities.",
+        "data": {
+          "controller_name": "Controller name",
+          "interval_days": "Interval (calendar days)",
+          "start_time": "Local start time",
+          "transition_delay": "Zone transition delay (seconds)",
+          "pump_entity_id": "Pump switch",
+          "pause_entity_id": "Pause condition",
+          "multiplier_entity_id": "Duration multiplier"
+        }
+      },
+      "add_zone": {
+        "title": "Add irrigation zone",
+        "data": {
+          "name": "Zone name",
+          "duration": "Duration (seconds)",
+          "enabled": "Enabled",
+          "valves": "Valve switches"
+        }
+      },
+      "add_another_zone": {
+        "title": "Add another zone",
+        "data": {
+          "add_another": "Add another zone"
+        }
+      }
+    },
+    "error": {
+      "zone_required": "At least one zone is required.",
+      "valve_required": "Every zone needs at least one valve switch.",
+      "duration_positive": "Zone duration must be positive."
+    }
+  },
+  "options": {
+    "step": {
+      "global": {
+        "title": "Controller settings",
+        "data": {
+          "controller_name": "Controller name",
+          "interval_days": "Interval (calendar days)",
+          "start_time": "Local start time",
+          "transition_delay": "Zone transition delay (seconds)",
+          "pump_entity_id": "Pump switch",
+          "pause_entity_id": "Pause condition",
+          "multiplier_entity_id": "Duration multiplier"
+        }
+      },
+      "add_zone": {
+        "title": "Add irrigation zone",
+        "data": {
+          "name": "Zone name",
+          "duration": "Duration (seconds)",
+          "enabled": "Enabled",
+          "valves": "Valve switches"
+        }
+      },
+      "edit_zone": {
+        "title": "Choose zone",
+        "data": {"id": "Zone"}
+      },
+      "edit_zone_detail": {
+        "title": "Edit zone",
+        "data": {
+          "name": "Zone name",
+          "duration": "Duration (seconds)",
+          "enabled": "Enabled",
+          "valves": "Valve switches"
+        }
+      },
+      "delete_zone": {
+        "title": "Delete zone",
+        "data": {"id": "Zone"}
+      },
+      "reorder_zones": {
+        "title": "Reorder zones",
+        "data": {"zone_order": "Zone order"}
+      }
+    },
+    "abort": {
+      "controller_active": "Stop watering before changing controller options.",
+      "zone_not_found": "The selected zone no longer exists."
+    },
+    "error": {
+      "zone_required": "At least one zone is required.",
+      "valve_required": "Every zone needs at least one valve switch.",
+      "duration_positive": "Zone duration must be positive.",
+      "invalid_order": "Select every zone exactly once."
+    }
+  }
+}

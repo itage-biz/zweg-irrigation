@@ -1,0 +1,41 @@
+start_watering:
+  name: Start watering
+  description: Start a complete watering cycle when the controller is enabled and safe.
+  target:
+    device:
+      integration: zweg_irrigation
+  fields: {}
+stop_watering:
+  name: Stop watering
+  description: Immediately turn off all controller outputs and clear active and pending work.
+  target:
+    device:
+      integration: zweg_irrigation
+  fields: {}
+pause_watering:
+  name: Pause watering
+  description: Turn outputs off and retain watering progress.
+  target:
+    device:
+      integration: zweg_irrigation
+  fields: {}
+resume_watering:
+  name: Resume watering
+  description: Resume retained watering work if all safety conditions are clear.
+  target:
+    device:
+      integration: zweg_irrigation
+  fields: {}
+start_zone:
+  name: Start zone
+  description: Start one enabled zone when no cycle is active.
+  target:
+    device:
+      integration: zweg_irrigation
+  fields:
+    zone_id:
+      name: Zone ID
+      description: The stable configured ID of the zone to start.
+      required: true
+      selector:
+        text:

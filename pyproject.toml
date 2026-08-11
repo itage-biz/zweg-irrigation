@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zweg-irrigation"
+version = "0.1.0"
+description = "Home Assistant irrigation controller custom integration"
+requires-python = ">=3.14"
+dependencies = ["homeassistant>=2026.7.0"]
+
+[project.optional-dependencies]
+dev = [
+  "homeassistant==2026.7.0",
+  "pytest-homeassistant-custom-component==0.13.344",
+  "pytest-cov>=6.0",
+  "ruff>=0.12.0",
+  "mypy>=1.16.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-p no:homeassistant --strict-markers --cov=custom_components.zweg_irrigation --cov-report=term-missing --cov-report=xml --cov-fail-under=35"
+
+[tool.coverage.run]
+branch = true
+source = ["custom_components/zweg_irrigation"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "RUF"]
+
+[tool.mypy]
+python_version = "3.14"
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["homeassistant.*", "voluptuous"]
+ignore_missing_imports = true
