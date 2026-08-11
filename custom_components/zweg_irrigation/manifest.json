@@ -1,8 +1,8 @@
 {
   "domain": "zweg_irrigation",
   "name": "Zweg Irrigation",
-  "codeowners": ["@itage-biz"],
   "after_dependencies": ["logbook"],
+  "codeowners": ["@itage-biz"],
   "config_flow": true,
   "documentation": "https://github.com/itage-biz/zweg-irrigation",
   "integration_type": "hub",
