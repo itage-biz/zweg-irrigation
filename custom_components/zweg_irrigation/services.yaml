@@ -1,38 +1,58 @@
 start_watering:
   name: Start watering
   description: Start a complete watering cycle when the controller is enabled and safe.
-  target:
-    device:
-      integration: zweg_irrigation
-  fields: {}
+  fields:
+    device_id:
+      name: Controller
+      description: Zweg Irrigation controller device to start.
+      required: true
+      selector:
+        device:
+          integration: zweg_irrigation
 stop_watering:
   name: Stop watering
   description: Immediately turn off all controller outputs and clear active and pending work.
-  target:
-    device:
-      integration: zweg_irrigation
-  fields: {}
+  fields:
+    device_id:
+      name: Controller
+      description: Zweg Irrigation controller device to stop.
+      required: true
+      selector:
+        device:
+          integration: zweg_irrigation
 pause_watering:
   name: Pause watering
   description: Turn outputs off and retain watering progress.
-  target:
-    device:
-      integration: zweg_irrigation
-  fields: {}
+  fields:
+    device_id:
+      name: Controller
+      description: Zweg Irrigation controller device to pause.
+      required: true
+      selector:
+        device:
+          integration: zweg_irrigation
 resume_watering:
   name: Resume watering
   description: Resume retained watering work if all safety conditions are clear.
-  target:
-    device:
-      integration: zweg_irrigation
-  fields: {}
+  fields:
+    device_id:
+      name: Controller
+      description: Zweg Irrigation controller device to resume.
+      required: true
+      selector:
+        device:
+          integration: zweg_irrigation
 start_zone:
   name: Start zone
   description: Start one enabled zone when no cycle is active.
-  target:
-    device:
-      integration: zweg_irrigation
   fields:
+    device_id:
+      name: Controller
+      description: Zweg Irrigation controller device that owns the zone.
+      required: true
+      selector:
+        device:
+          integration: zweg_irrigation
     zone_id:
       name: Zone ID
       description: The stable configured ID of the zone to start.

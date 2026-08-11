@@ -5,6 +5,7 @@ from __future__ import annotations
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 
 from .const import (
@@ -24,6 +25,8 @@ from .controller import IrrigationController
 from .runtime import RuntimeStore
 
 type ZwegIrrigationConfigEntry = ConfigEntry[dict[str, object]]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup(hass: HomeAssistant, _: dict[str, object]) -> bool:

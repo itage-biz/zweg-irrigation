@@ -2,6 +2,7 @@
   "domain": "zweg_irrigation",
   "name": "Zweg Irrigation",
   "codeowners": ["@itage-biz"],
+  "after_dependencies": ["logbook"],
   "config_flow": true,
   "documentation": "https://github.com/itage-biz/zweg-irrigation",
   "integration_type": "hub",
@@ -10,4 +11,3 @@
   "requirements": [],
   "version": "0.1.0"
 }
-
