@@ -11,7 +11,7 @@ dependencies = ["homeassistant>=2026.7.0"]
 
 [project.optional-dependencies]
 dev = [
-  "homeassistant==2026.7.0",
+  "homeassistant==2026.8.1",
   "pytest-homeassistant-custom-component==0.13.344",
   "pytest-cov>=6.0",
   "ruff>=0.12.0",
