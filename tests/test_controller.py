@@ -2,11 +2,13 @@
 
 import asyncio
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 
 import pytest
 from homeassistant.core import HomeAssistant
 
+from custom_components.zweg_irrigation.const import STATE_RUNNING
 from custom_components.zweg_irrigation.controller import IrrigationController
 from custom_components.zweg_irrigation.models import RuntimeState
 
@@ -200,20 +202,24 @@ async def test_irrigation_enabled_entity_pauses_when_off_and_resumes_when_on(
     hass.services.async_register("switch", "turn_on", set_switch)
     hass.services.async_register("switch", "turn_off", set_switch)
     hass.states.async_set("switch.a", "off")
+    hass.states.async_set("switch.pump", "off")
     hass.states.async_set("input_boolean.irrigation_enabled", "on")
     try:
+        entry = controller_entry(
+            duration=30,
+            irrigation_enabled="input_boolean.irrigation_enabled",
+        )
+        entry.data["pump_entity_id"] = "switch.pump"
         controller = IrrigationController(
             hass,
-            controller_entry(
-                duration=30,
-                irrigation_enabled="input_boolean.irrigation_enabled",
-            ),
+            entry,
             MemoryRuntimeStore(),
         )
         await controller.async_start()
 
         assert await controller.async_start_cycle()
         assert hass.states.get("switch.a").state == "on"
+        assert hass.states.get("switch.pump").state == "on"
 
         hass.states.async_set("input_boolean.irrigation_enabled", "off")
         await asyncio.sleep(0)
@@ -221,12 +227,34 @@ async def test_irrigation_enabled_entity_pauses_when_off_and_resumes_when_on(
 
         assert controller.status == "paused"
         assert hass.states.get("switch.a").state == "off"
+        assert hass.states.get("switch.pump").state == "off"
 
         hass.states.async_set("input_boolean.irrigation_enabled", "on")
         await asyncio.sleep(0)
         await asyncio.sleep(0)
 
         assert controller.status == "running"
+        assert hass.states.get("switch.a").state == "on"
+        assert hass.states.get("switch.pump").state == "on"
         await controller.async_stop()
+    finally:
+        await hass.async_stop()
+
+
+@pytest.mark.asyncio
+async def test_remaining_tick_notifies_only_while_watering(tmp_path: Path) -> None:
+    """The real-time refresh avoids writes while the controller is idle."""
+    hass = HomeAssistant(str(tmp_path))
+    try:
+        controller = IrrigationController(hass, controller_entry(), MemoryRuntimeStore())
+        notifications: list[None] = []
+        controller.add_listener(lambda: notifications.append(None))
+
+        controller._async_remaining_tick(datetime.now())
+        assert notifications == []
+
+        controller.runtime.state = STATE_RUNNING
+        controller._async_remaining_tick(datetime.now())
+        assert notifications == [None]
     finally:
         await hass.async_stop()

@@ -14,7 +14,11 @@ from homeassistant.components.logbook import async_log_entry
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP, STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import Event, EventStateChangedData, HomeAssistant, callback
-from homeassistant.helpers.event import async_track_point_in_time, async_track_state_change_event
+from homeassistant.helpers.event import (
+    async_track_point_in_time,
+    async_track_state_change_event,
+    async_track_time_interval,
+)
 from homeassistant.util import dt as dt_util
 
 from .const import (
@@ -76,6 +80,14 @@ class IrrigationController:
             )
         self._unsubscribers.append(
             self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_hass_stop)
+        )
+        self._unsubscribers.append(
+            async_track_time_interval(
+                self.hass,
+                self._async_remaining_tick,
+                timedelta(seconds=1),
+                name=DOMAIN,
+            )
         )
         await self._async_refresh_irrigation_enabled()
         if self.paused and self.runtime.state == STATE_IDLE:
@@ -519,6 +531,12 @@ class IrrigationController:
             self._zone_remaining_at_start
             - (time_module.monotonic() - self._zone_started_monotonic),
         )
+
+    @callback
+    def _async_remaining_tick(self, _: datetime) -> None:
+        """Refresh entities while an active zone is counting down."""
+        if self.runtime.state == STATE_RUNNING:
+            self._notify()
 
     def _enabled_zones(self) -> list[Zone]:
         return [zone for zone in self.config.zones if zone.enabled]
