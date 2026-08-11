@@ -9,8 +9,8 @@ from typing import Any
 from .const import (
     CONF_CONTROLLER_NAME,
     CONF_INTERVAL_DAYS,
+    CONF_IRRIGATION_ENABLED_ENTITY_ID,
     CONF_MULTIPLIER_ENTITY_ID,
-    CONF_PAUSE_ENTITY_ID,
     CONF_PUMP_ENTITY_ID,
     CONF_START_TIME,
     CONF_TRANSITION_DELAY,
@@ -59,7 +59,7 @@ class ControllerConfig:
     start_time: str
     transition_delay: int
     pump_entity_id: str | None
-    pause_entity_id: str | None
+    irrigation_enabled_entity_id: str | None
     multiplier_entity_id: str | None
     zones: tuple[Zone, ...]
 
@@ -72,7 +72,7 @@ class ControllerConfig:
             start_time=value[CONF_START_TIME],
             transition_delay=value[CONF_TRANSITION_DELAY],
             pump_entity_id=value.get(CONF_PUMP_ENTITY_ID) or None,
-            pause_entity_id=value.get(CONF_PAUSE_ENTITY_ID) or None,
+            irrigation_enabled_entity_id=value.get(CONF_IRRIGATION_ENABLED_ENTITY_ID) or None,
             multiplier_entity_id=value.get(CONF_MULTIPLIER_ENTITY_ID) or None,
             zones=tuple(Zone.from_dict(zone) for zone in value[CONF_ZONES]),
         )
@@ -85,7 +85,7 @@ class ControllerConfig:
             CONF_START_TIME: self.start_time,
             CONF_TRANSITION_DELAY: self.transition_delay,
             CONF_PUMP_ENTITY_ID: self.pump_entity_id,
-            CONF_PAUSE_ENTITY_ID: self.pause_entity_id,
+            CONF_IRRIGATION_ENABLED_ENTITY_ID: self.irrigation_enabled_entity_id,
             CONF_MULTIPLIER_ENTITY_ID: self.multiplier_entity_id,
             CONF_ZONES: [zone.as_dict() for zone in self.zones],
         }

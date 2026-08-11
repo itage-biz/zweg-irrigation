@@ -10,7 +10,7 @@
           "start_time": "Local start time",
           "transition_delay": "Zone transition delay (seconds)",
           "pump_entity_id": "Pump switch",
-          "pause_entity_id": "Pause condition",
+          "pause_entity_id": "Irrigation enabled",
           "multiplier_entity_id": "Duration multiplier"
         }
       },
@@ -38,6 +38,15 @@
   },
   "options": {
     "step": {
+      "init": {
+        "menu_options": {
+          "global": "Controller settings",
+          "add_zone": "Add zone",
+          "edit_zone": "Edit zone",
+          "delete_zone": "Delete zone",
+          "reorder_zones": "Reorder zones"
+        }
+      },
       "global": {
         "title": "Controller settings",
         "data": {
@@ -46,7 +55,7 @@
           "start_time": "Local start time",
           "transition_delay": "Zone transition delay (seconds)",
           "pump_entity_id": "Pump switch",
-          "pause_entity_id": "Pause condition",
+          "pause_entity_id": "Irrigation enabled",
           "multiplier_entity_id": "Duration multiplier"
         }
       },

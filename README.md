@@ -14,8 +14,8 @@ notification delivery.
 
 - Home Assistant Core 2026.7.0 or later.
 - A `switch` entity for every valve and, optionally, the pump.
-- Optionally, a `binary_sensor` or `input_boolean` that pauses watering when on.
-- Optionally, a `number` entity supplying a finite positive duration multiplier.
+- Optionally, a `binary_sensor` or `input_boolean` that enables watering when on.
+- Optionally, a `number` or `input_number` entity supplying a finite positive duration multiplier.
 - HACS is optional.
 
 ## Installation
@@ -40,14 +40,14 @@ branch otherwise. Releases are preferred for stable installations.
 ## Configuration
 
 Create one controller for each irrigation system. Choose a calendar interval, local
-start time, optional pump, optional pause condition, optional multiplier, and one or
+start time, optional pump, optional irrigation-enabled entity, optional multiplier, and one or
 more zones. Each zone has a stable ID, name, enabled default, duration in seconds,
 and one or more valve switches. Zone order is editable in the integration options.
 
 The controller starts the pump before the first enabled zone, keeps it on through
 zone handoffs, and turns it off after the final zone. A multiplier is read just
-before every zone and applies only to that zone. Unavailable/unknown pause entities
-always require a pause.
+before every zone and applies only to that zone. An irrigation-enabled entity must
+be on; off, unavailable, and unknown states block watering.
 
 ## Actions
 
@@ -99,7 +99,7 @@ always require a manual Resume.
 Add the controller status, current zone, next run, remaining time, watering, and
 paused entities to a dashboard; add per-zone enabled, watering, and remaining-time
 entities beside their controls. If watering does not start, check global enable,
-pause condition state, multiplier value, enabled zones, and switch availability.
+irrigation-enabled entity state, multiplier value, enabled zones, and switch availability.
 Output actions are retried three times at five-second intervals before the controller
 enters fault-paused; inspect the lifecycle event and Home Assistant log, repair the
 output, then use Resume.

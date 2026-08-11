@@ -66,16 +66,18 @@ class IrrigationController:
         """Restore state, subscribe to HA events, and arm the schedule."""
         self.runtime = await self._runtime_store.async_load()
         self.enabled = self.runtime.enabled
-        if self.config.pause_entity_id:
+        if self.config.irrigation_enabled_entity_id:
             self._unsubscribers.append(
                 async_track_state_change_event(
-                    self.hass, [self.config.pause_entity_id], self._async_pause_condition_changed
+                    self.hass,
+                    [self.config.irrigation_enabled_entity_id],
+                    self._async_irrigation_enabled_changed,
                 )
             )
         self._unsubscribers.append(
             self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_hass_stop)
         )
-        await self._async_refresh_condition_pause()
+        await self._async_refresh_irrigation_enabled()
         if self.paused and self.runtime.state == STATE_IDLE:
             self.runtime.state = STATE_PAUSED
         await self._async_arm_schedule(reset_anchor=self.runtime.schedule_anchor is None)
@@ -239,7 +241,7 @@ class IrrigationController:
             if not self.enabled:
                 return False
             self.runtime.pause_reasons.discard(PAUSE_MANUAL)
-            await self._async_refresh_condition_pause()
+            await self._async_refresh_irrigation_enabled()
             if self.runtime.pause_reasons - {PAUSE_RESTART, PAUSE_OUTPUT_FAULT}:
                 return False
             if PAUSE_OUTPUT_FAULT in self.runtime.pause_reasons:
@@ -466,22 +468,22 @@ class IrrigationController:
             await self._async_emit("schedule_queued", reason="controller_busy_or_paused")
             self._notify()
 
-    async def _async_pause_condition_changed(self, _: Event[EventStateChangedData]) -> None:
+    async def _async_irrigation_enabled_changed(self, _: Event[EventStateChangedData]) -> None:
         was_paused = PAUSE_CONDITION in self.runtime.pause_reasons
-        await self._async_refresh_condition_pause()
+        await self._async_refresh_irrigation_enabled()
         condition_paused = PAUSE_CONDITION in self.runtime.pause_reasons
         if condition_paused and not was_paused:
             await self.async_pause(PAUSE_CONDITION)
         elif was_paused and not condition_paused and PAUSE_MANUAL not in self.runtime.pause_reasons:
             await self.async_resume()
 
-    async def _async_refresh_condition_pause(self) -> None:
-        entity_id = self.config.pause_entity_id
+    async def _async_refresh_irrigation_enabled(self) -> None:
+        entity_id = self.config.irrigation_enabled_entity_id
         if not entity_id:
             self.runtime.pause_reasons.discard(PAUSE_CONDITION)
             return
         state = self.hass.states.get(entity_id)
-        if state is None or state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, "on"):
+        if state is None or state.state != "on":
             self.runtime.pause_reasons.add(PAUSE_CONDITION)
         else:
             self.runtime.pause_reasons.discard(PAUSE_CONDITION)

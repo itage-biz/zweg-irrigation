@@ -33,7 +33,12 @@ class Entry:
     entry_id: str = "entry-id"
 
 
-def controller_entry(*, multiplier: str | None = None) -> Entry:
+def controller_entry(
+    *,
+    duration: int = 1,
+    multiplier: str | None = None,
+    irrigation_enabled: str | None = None,
+) -> Entry:
     """Build a compact controller configuration for safety tests."""
     data: dict[str, object] = {
         "controller_name": "Garden",
@@ -44,7 +49,7 @@ def controller_entry(*, multiplier: str | None = None) -> Entry:
             {
                 "id": "front",
                 "name": "Front",
-                "duration": 1,
+                "duration": duration,
                 "enabled": True,
                 "valves": ["switch.a"],
             }
@@ -52,6 +57,8 @@ def controller_entry(*, multiplier: str | None = None) -> Entry:
     }
     if multiplier:
         data["multiplier_entity_id"] = multiplier
+    if irrigation_enabled:
+        data["pause_entity_id"] = irrigation_enabled
     return Entry(data=data)
 
 
@@ -158,15 +165,15 @@ async def test_invalid_multiplier_and_global_disable_never_leave_output_on(tmp_p
     hass.services.async_register("switch", "turn_on", set_switch)
     hass.services.async_register("switch", "turn_off", set_switch)
     hass.states.async_set("switch.a", "off")
-    hass.states.async_set("number.multiplier", "unknown")
+    hass.states.async_set("input_number.multiplier", "unknown")
     try:
         controller = IrrigationController(
-            hass, controller_entry(multiplier="number.multiplier"), MemoryRuntimeStore()
+            hass, controller_entry(multiplier="input_number.multiplier"), MemoryRuntimeStore()
         )
         assert not await controller.async_start_cycle()
         assert controller.status == "idle"
 
-        hass.states.async_set("number.multiplier", "1")
+        hass.states.async_set("input_number.multiplier", "1")
         assert await controller.async_start_cycle()
         assert hass.states.get("switch.a").state == "on"
         await controller.async_set_enabled(False)
@@ -175,5 +182,51 @@ async def test_invalid_multiplier_and_global_disable_never_leave_output_on(tmp_p
         assert controller.status == "idle"
         assert hass.states.get("switch.a").state == "off"
         assert not controller.runtime.pending_schedule
+    finally:
+        await hass.async_stop()
+
+
+@pytest.mark.asyncio
+async def test_irrigation_enabled_entity_pauses_when_off_and_resumes_when_on(
+    tmp_path: Path,
+) -> None:
+    """An enabled entity permits watering only while its state is on."""
+    hass = HomeAssistant(str(tmp_path))
+
+    async def set_switch(call) -> None:
+        entity_id = call.data["entity_id"]
+        hass.states.async_set(entity_id, "on" if call.service == "turn_on" else "off")
+
+    hass.services.async_register("switch", "turn_on", set_switch)
+    hass.services.async_register("switch", "turn_off", set_switch)
+    hass.states.async_set("switch.a", "off")
+    hass.states.async_set("input_boolean.irrigation_enabled", "on")
+    try:
+        controller = IrrigationController(
+            hass,
+            controller_entry(
+                duration=30,
+                irrigation_enabled="input_boolean.irrigation_enabled",
+            ),
+            MemoryRuntimeStore(),
+        )
+        await controller.async_start()
+
+        assert await controller.async_start_cycle()
+        assert hass.states.get("switch.a").state == "on"
+
+        hass.states.async_set("input_boolean.irrigation_enabled", "off")
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+
+        assert controller.status == "paused"
+        assert hass.states.get("switch.a").state == "off"
+
+        hass.states.async_set("input_boolean.irrigation_enabled", "on")
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+
+        assert controller.status == "running"
+        await controller.async_stop()
     finally:
         await hass.async_stop()

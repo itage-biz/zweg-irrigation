@@ -14,8 +14,8 @@ from homeassistant.helpers import selector
 from .const import (
     CONF_CONTROLLER_NAME,
     CONF_INTERVAL_DAYS,
+    CONF_IRRIGATION_ENABLED_ENTITY_ID,
     CONF_MULTIPLIER_ENTITY_ID,
-    CONF_PAUSE_ENTITY_ID,
     CONF_PUMP_ENTITY_ID,
     CONF_START_TIME,
     CONF_TRANSITION_DELAY,
@@ -47,8 +47,10 @@ GLOBAL_SCHEMA = vol.Schema(
         vol.Required(CONF_START_TIME, default="06:00:00"): selector.TimeSelector(),
         vol.Required(CONF_TRANSITION_DELAY, default=0): vol.All(vol.Coerce(int), vol.Range(min=0)),
         vol.Optional(CONF_PUMP_ENTITY_ID): _entity_selector(["switch"]),
-        vol.Optional(CONF_PAUSE_ENTITY_ID): _entity_selector(["binary_sensor", "input_boolean"]),
-        vol.Optional(CONF_MULTIPLIER_ENTITY_ID): _entity_selector(["number"]),
+        vol.Optional(CONF_IRRIGATION_ENABLED_ENTITY_ID): _entity_selector(
+            ["binary_sensor", "input_boolean"]
+        ),
+        vol.Optional(CONF_MULTIPLIER_ENTITY_ID): _entity_selector(["input_number", "number"]),
     }
 )
 
