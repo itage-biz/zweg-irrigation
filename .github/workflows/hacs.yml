@@ -16,6 +16,7 @@ jobs:
       - uses: hacs/action@1ebf01c408f29afcb6406bd431bc98fd8cbb15aa
         with:
           category: integration
+          repository: ${{ github.repository }}
           ignore: brands license
   hassfest:
     runs-on: ubuntu-latest

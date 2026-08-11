@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, cast
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
@@ -34,7 +34,7 @@ from .models import ControllerConfig
 def _entity_selector(domains: list[str], *, multiple: bool = False) -> selector.EntitySelector:
     return selector.EntitySelector(
         selector.EntitySelectorConfig(
-            filter=[selector.EntityFilterSelectorConfig(domain=domain) for domain in domains],
+            filter=cast(Any, [{"domain": domain} for domain in domains]),
             multiple=multiple,
         )
     )
